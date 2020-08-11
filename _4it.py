@@ -7,13 +7,14 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse   import quote
 import socket, struct
-
+import ipaddress
 
 class api:
     def __init__(self):
         self.BASE_URL = 'https://4it.me/'
         self.API_URL = 'https://4it.me/api/'
         self.session = requests.Session()
+        self.session.get(self.BASE_URL)
 
     def get_city_list(self,city:str):
         #Returns all found cities
@@ -29,6 +30,7 @@ class api:
         return cities
 
     def convert(self,ip_encoded:int):
+        
         return socket.inet_ntoa(struct.pack('!L', ip_encoded))
 
     def get_ip_list(self,city,id_net=None, id_nic=None):
@@ -53,14 +55,17 @@ class api:
             ans = self.session.get(self.API_URL+'getlistip', params = payload, headers = headers)
             ans_json = ans.json()
             for el in ans_json:
-                to_return.append(self.convert(el['b'])+'-'+self.convert(el['e']))
+                dt = self.convert(el['b'])+'-'+self.convert(el['e'])
+                if dt not in to_return:
+                    to_return.append(dt)
         return to_return
 
 
     def get_whois(self,target:str):#Function of site api
-
-        headers = {'Referer':self.BASE_URL+'whois',                   
-                   'X-Requested-With':'XMLHttpRequest'}
+        #self.session.get('https://4it.me/whois?q='+target,headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:79.0) Gecko/20100101 Firefox/79.0'})
+        headers = {'X-Requested-With':'XMLHttpRequest',
+                   'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:79.0) Gecko/20100101 Firefox/79.0',
+                   'Referer':'https://4it.me/whois?q='+target}
 
         response = self.session.get(self.API_URL+'getwhois?query='+target,headers = headers)
         rp_json = response.json()
@@ -106,13 +111,13 @@ class api:
         #Returns raw information about ip adress or domain
         to_return=[]
         to_return.append(self.get_whois(target))
-        to_return.append(self.get_yandex(target))
+        #to_return.append(self.get_yandex(target))
         to_return.append(self.get_Alexa(target))
         to_return.append(self.get_google_dns(target))
         to_return.append(self.get_available_status(target))
         return to_return
 
-    def port_scan(self,target:str,ports:list):
+    def port_scan(self,target:str,ports:list)->dict:
         headers = {'Referer':self.BASE_URL+'portscan',                   
                    'X-Requested-With':'XMLHttpRequest'}
         port_str = str(ports[0])
@@ -129,9 +134,13 @@ class api:
 
 if __name__ == '__main__':
     it = api()
-    #info = it.get_city_list('Курск')
-    #ips = it.get_ip_list('Курск',id_net = info[0]['id_net'], id_nic = info[0]['id_nic'])
-    #print(ips)
-    inf = it.port_scan('rootgame.org',[80,8080])
-    print(inf)
-    input()
+    ret = it.get_whois('83.249.124.254')['clearResponse'].split('\n')
+    code = ''
+    for line in ret:
+        if 'country' in line.lower():
+            code = line[len(line)-2:]
+            break
+
+    
+    print(ret)
+    
