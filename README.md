@@ -7,7 +7,7 @@ This function returns you all found cities with given name
 in returned data you can find codes of city they will be needed
 for this function:
 get_ip_list(self,city,id_net=None, id_nic=None)
-So this function returnes ip adresses of city
+So this function returnes ip adresses of the city
 
 whois(self,target:str)
 This function returnes information about domain or ip adress
