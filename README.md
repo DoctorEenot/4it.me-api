@@ -13,7 +13,7 @@ whois(self,target:str)
 This function returnes information about domain or ip adress
 
 port_scan(self,target:str,ports:list)
-So this funtion allows you check ports on the target
+So this funtion allows you to check ports on the target
 on behalf of the 4it.me server
 
 other functions are just functons of 4it.me api 
